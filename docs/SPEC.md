@@ -168,6 +168,8 @@ Frida prototipiyle başla; her faz bir doğrulama kapısıyla biter.
 
 Bir faz, altındaki kapı sağlanmadan bir sonrakine geçmez. Faz 0 başarısız olursa native dylib'e yatırım yapılmadan yön değiştirilebilir.
 
+**Faz 0 durumu (26 Kasım 2026):** Kod ve CI hazır; cihaz testi bekleniyor. Agent, host köprüsü, örnek uygulamalar ve Gadget eklenmiş IPA'lar [prototype/](../prototype/README.md), [samples/](../samples/) ve [tools/](../tools/) altında. Faz 0'daki `tap` semantiktir (UIControl eylemi, hücre seçimi, `accessibilityActivate`, WebView'da JavaScript); gerçek dokunma olayı Faz 1'de gelir.
+
 ## Riskler
 
 - Private API'ler (IOHIDEvent, AX etkinleştirme) yeni iOS sürümlerinde kırılabilir. Her yeni iOS sürümünde regresyon testi gerekir.

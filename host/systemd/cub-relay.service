@@ -1,0 +1,24 @@
+# ComputerUseBridge reverse-mod relay'i için systemd kullanıcı servisi.
+# Kurulum:
+#   mkdir -p ~/.config/systemd/user
+#   cp host/systemd/cub-relay.service ~/.config/systemd/user/
+#   (REPO yolunu kendi klonuna göre düzenle)
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now cub-relay.service
+# Loglar: journalctl --user -u cub-relay -f
+# Token: ~/.config/cub/token (relay ilk çalıştırmada üretir)
+
+[Unit]
+Description=ComputerUseBridge reverse relay (Tailscale)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Environment=REPO=/home/ali/Belgeler/computer-use
+# Tailscale henüz IP almadıysa relay "IP bulunamadı" ile çıkar; systemd yeniden dener.
+ExecStart=/bin/sh -c 'exec "$REPO/host/.venv/bin/python" -u "$REPO/host/relay.py"'
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

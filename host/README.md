@@ -92,6 +92,8 @@ cub.py ──ws://127.0.0.1:8766──▶ relay.py ◀──ws://<bilgisayarın 
 python3 host/relay.py
 ```
 
+   Relay'i kalıcı çalıştırmak için systemd kullanıcı servisi: [systemd/cub-relay.service](systemd/cub-relay.service) (kurulum adımları dosyanın başında). Servis oturum açıldığında başlar ve çökerse 10 sn sonra yeniden başlar; oturum açılmadan da başlaması için `loginctl enable-linger` gerekir. Loglar: `journalctl --user -u cub-relay -f`.
+
 2. Telefonda uygulama açıkken ekrana **üç parmakla 1 saniye bas**. Açılan ComputerUseBridge menüsüne URL'yi (ör. `ws://100.85.90.10:8770`) ve token'ı yaz, **Reverse modu aç**'a dokun. Menü durum satırında `Reverse: bağlı` görünmeli; relay de `telefon bağlandı` yazar.
 3. İstemcileri relay'e yönlendir:
 

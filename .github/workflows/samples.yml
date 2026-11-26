@@ -36,6 +36,7 @@ jobs:
           pip install "websockets>=10.4"
           python -m unittest discover -v -s tools
           python -m unittest discover -v -s prototype/host
+          python -m unittest discover -v -s host
           python -m py_compile host/cub.py host/odav_demo.py
 
   samples:

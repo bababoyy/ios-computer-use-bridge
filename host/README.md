@@ -78,6 +78,31 @@ python3 cub.py tap e1a2b3c4
 python3 cub.py swipe 200 600 200 200 --duration 0.4
 ```
 
+## 3b. Reverse mod (Tailscale üzerinden, kablosuz)
+
+Dylib bilgisayara kendisi bağlanır; telefonda dinleyen port olmaz. Telefon ve bilgisayar aynı tailnet'te olmalı ve Tailscale VPN'i telefonda açık olmalı.
+
+```
+cub.py ──ws://127.0.0.1:8766──▶ relay.py ◀──ws://<bilgisayarın Tailscale IP'si>:8770── dylib (telefon)
+```
+
+1. Bilgisayarda relay'i başlat. İlk satırda telefona girilecek URL ve token yazar (token `~/.config/cub/token` dosyasında saklanır):
+
+```bash
+python3 host/relay.py
+```
+
+2. Telefonda uygulama açıkken ekrana **üç parmakla 1 saniye bas**. Açılan ComputerUseBridge menüsüne URL'yi (ör. `ws://100.85.90.10:8770`) ve token'ı yaz, **Reverse modu aç**'a dokun. Menü durum satırında `Reverse: bağlı` görünmeli; relay de `telefon bağlandı` yazar.
+3. İstemcileri relay'e yönlendir:
+
+```bash
+CUB_URL=ws://127.0.0.1:8766 python3 host/cub.py observe
+```
+
+Ayarlar uygulama başına saklanır (LiveContainer'da her uygulama için ayrı). Bağlantı koparsa dylib 1–30 sn aralıklarla yeniden dener; uygulama ön plana gelince hemen dener. Menü `observe` sonuçlarında görünmez ama ekran görüntüsünde görünür. `screen` yanıtındaki `bridge.reverse` alanı bağlantı durumunu verir.
+
+Relay token'ı doğrulamadan hiçbir isteği telefona iletmez; trafiği Tailscale (WireGuard) şifreler. Relay'in telefon portu yalnızca Tailscale IP'sinde dinler, istemci portu yalnızca 127.0.0.1'de.
+
 ## 4. Kapı testi: ODAV döngüsü
 
 SPEC'teki Faz 1 kapısı: agent bir UIKit uygulamasında görevi bitiriyor. Her örnek uygulamada:

@@ -14,6 +14,7 @@ import argparse
 import asyncio
 import itertools
 import json
+import os
 import sys
 from typing import Any
 
@@ -82,7 +83,7 @@ async def run(args: argparse.Namespace) -> int:
 
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--url", default="ws://127.0.0.1:8765")
+    p.add_argument("--url", default=os.environ.get("CUB_URL", "ws://127.0.0.1:8765"))
     p.add_argument("--tap-label", required=True, help="Dokunulacak elemanın erişilebilirlik etiketi")
     p.add_argument("--check-id", help="Değeri değişmesi beklenen elemanın accessibilityIdentifier'ı")
     p.add_argument("--settle-ms", type=int, default=500)

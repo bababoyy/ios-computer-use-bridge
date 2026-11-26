@@ -21,11 +21,12 @@ import asyncio
 import base64
 import itertools
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any
 
-DEFAULT_URL = "ws://127.0.0.1:8765"
+DEFAULT_URL = os.environ.get("CUB_URL", "ws://127.0.0.1:8765")
 _ids = itertools.count(1)
 
 

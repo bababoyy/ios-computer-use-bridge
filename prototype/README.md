@@ -1,4 +1,6 @@
-# Faz 0 — Frida prototipi
+# Faz 0 — Frida prototipi (arşiv)
+
+> **Askıya alındı (26 Kasım 2026).** Gadget eklenmiş uygulamalar iOS 27.3'te `FridaGadget.dylib`'in başlatıcısında çöktü (olası neden: JIT yok). Proje JIT gerektirmeyen native dylib ile devam ediyor: [host/README.md](../host/README.md). Aşağıdaki talimatlar kayıt için duruyor; CI artık Gadget'lı IPA üretmiyor, `odav_demo.py` [host/](../host/) altına taşındı ve `tools/inject_gadget.py` yerini `tools/inject_dylib.py`'ye bıraktı (Gadget için `--config FridaGadget.config` ile kullanılabilir).
 
 Amaç: native dylib'e yatırım yapmadan önce Observe → Decide → Act → Verify döngüsünün UIKit, SwiftUI ve WebView uygulamalarında çalıştığını göstermek. Kapı: ODAV döngüsü 3 örnek uygulamada çalışıyor (bkz. [docs/SPEC.md](../docs/SPEC.md)).
 

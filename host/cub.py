@@ -4,7 +4,7 @@
 Dylib, uygulamanın içinde ws://127.0.0.1:8765 adresinde dinler. Bilgisayardan erişmek
 için portu USB üzerinden yönlendir:
 
-    iproxy 8765 8765
+    iproxy 8765:8765
 
 Örnekler:
     python cub.py ping
@@ -71,7 +71,7 @@ async def run(args: argparse.Namespace) -> int:
         ws = await ws_cm.__aenter__()
     except (OSError, asyncio.TimeoutError) as e:
         print(f"{args.url} adresine bağlanılamadı ({e}).\n"
-              "Uygulama açık mı, 'iproxy 8765 8765' çalışıyor mu?", file=sys.stderr)
+              "Uygulama açık mı, 'iproxy 8765:8765' çalışıyor mu?", file=sys.stderr)
         return 2
     try:
         if args.cmd == "ping":

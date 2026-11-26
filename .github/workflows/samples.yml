@@ -33,7 +33,7 @@ jobs:
           python-version: "3.12"
       - name: Python testleri
         run: |
-          pip install "websockets>=10.4"
+          pip install -r host/requirements.txt
           python -m unittest discover -v -s tools
           python -m unittest discover -v -s prototype/host
           python -m unittest discover -v -s host

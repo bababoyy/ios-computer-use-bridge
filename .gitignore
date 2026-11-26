@@ -10,3 +10,4 @@ __pycache__/
 samples/build/
 samples/*.xcodeproj/
 dist/
+host/.venv/

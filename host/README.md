@@ -103,6 +103,22 @@ Ayarlar uygulama başına saklanır (LiveContainer'da her uygulama için ayrı).
 
 Relay token'ı doğrulamadan hiçbir isteği telefona iletmez; trafiği Tailscale (WireGuard) şifreler. Relay'in telefon portu yalnızca Tailscale IP'sinde dinler, istemci portu yalnızca 127.0.0.1'de.
 
+## 3c. MCP sunucusu (Claude'un doğrudan kullanması için)
+
+[mcp_server.py](mcp_server.py), köprüyü MCP araçları olarak sunar: `screen`, `observe` (ekran görüntüsü görüntü olarak + eleman listesi metin olarak), `tap`, `swipe`, `activate`, `type`. Eylem araçları `observe_after` ile yeni durumu aynı yanıtta döndürebilir. Köprü hataları (telefon bağlı değil, eleman yok, odak yok, uygulama arka planda) araç hatası olarak döner.
+
+```bash
+cd host && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+```
+
+Claude Code'a ekle (reverse mod için relay çalışıyor olmalı; USB için `CUB_URL=ws://127.0.0.1:8765`):
+
+```bash
+claude mcp add cub -e CUB_URL=ws://127.0.0.1:8766 -- "$PWD/host/.venv/bin/python" "$PWD/host/mcp_server.py"
+```
+
+Komutu repo kökünde çalıştır. Telefonda uygulama ön planda ve köprü bağlıyken Claude'a "telefondaki uygulamada ... yap" demek yeterli.
+
 ## 4. Kapı testi: ODAV döngüsü
 
 SPEC'teki Faz 1 kapısı: agent bir UIKit uygulamasında görevi bitiriyor. Her örnek uygulamada:

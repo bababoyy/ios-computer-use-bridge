@@ -190,6 +190,12 @@ void CUBPerformAction(NSDictionary *params, CUBActCompletion completion) {
             return;
         }
         point = CGPointMake(CGRectGetMidX(found.frame), CGRectGetMidY(found.frame));
+        // SwiftUI Toggle'ın erişilebilirlik çerçevesi etiketle birlikte tüm satırı kaplar ve anahtar sağ uçtadır.
+        // Satırın ortasına dokunmak anahtarı değiştirmez; dokunma noktasını anahtarın merkezine kaydır.
+        if (!found.isWebView && ![found.object isKindOfClass:UISwitch.class] &&
+            [found.element[@"traits"] containsObject:@"toggleButton"] && found.frame.size.width > 120) {
+            point.x = CGRectGetMaxX(found.frame) - 26;
+        }
     } else {
         CUBParsePoint(target, &point);
     }

@@ -1,7 +1,9 @@
 #import "CUBObserver.h"
 #import <WebKit/WebKit.h>
 #import <dlfcn.h>
+#import "CUBBridge.h"
 #import "CUBCommon.h"
+#import "CUBMenu.h"
 
 @implementation CUBFound
 @end
@@ -99,7 +101,7 @@ NSDictionary<NSString *, id> *CUBScreenInfo(void) {
         @"units": @"points",
         @"app": @{@"bundleId": CUBOrNull(NSBundle.mainBundle.bundleIdentifier), @"state": state ?: @"unknown"},
         @"axAutomation": @(gAXAutomation),
-        @"bridge": @{@"impl": @"native", @"version": @"0.1.0"},
+        @"bridge": CUBBridgeStatus(),
     };
 }
 
@@ -238,6 +240,7 @@ static void CUBVisit(id o, NSString *path, NSUInteger depth, NSMutableArray<CUBF
     if (isView) {
         UIView *v = o;
         if (v.hidden || v.alpha < 0.01) return;
+        if ([v.accessibilityIdentifier hasPrefix:CUBMenuIdentifierPrefix]) return;  // köprünün kendi menüsü
     }
     if ([o accessibilityElementsHidden]) return;
 

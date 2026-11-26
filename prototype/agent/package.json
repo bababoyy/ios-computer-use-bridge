@@ -1,0 +1,18 @@
+{
+  "name": "computer-use-bridge-agent",
+  "version": "0.1.0",
+  "description": "Faz 0: Frida Gadget içinde çalışan gözlem/eylem agent'ı",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "frida-compile src/index.ts -o _agent.js -c",
+    "watch": "frida-compile src/index.ts -o _agent.js -w"
+  },
+  "dependencies": {
+    "frida-objc-bridge": "^8.0.6"
+  },
+  "devDependencies": {
+    "@types/frida-gum": "^19.13.0",
+    "frida-compile": "^19.1.0"
+  }
+}

@@ -1,0 +1,60 @@
+# XcodeGen tanımı: xcodegen generate → BridgeSamples.xcodeproj
+# Faz 0 kapısı için UIKit, SwiftUI ve WebView örnek uygulamaları.
+name: BridgeSamples
+options:
+  bundleIdPrefix: dev.computeruse.samples
+  deploymentTarget:
+    iOS: "26.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    TARGETED_DEVICE_FAMILY: "1"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    # Sonradan LC_LOAD_DYLIB eklenebilmesi için Mach-O başlığında yer bırak
+    OTHER_LDFLAGS: "-Wl,-headerpad_max_install_names"
+targets:
+  UIKitSample:
+    type: application
+    platform: iOS
+    sources: [UIKitSample]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.computeruse.samples.uikit
+    info:
+      path: build/UIKitSample-Info.plist
+      properties:
+        CFBundleDisplayName: UIKit Sample
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+
+  SwiftUISample:
+    type: application
+    platform: iOS
+    sources: [SwiftUISample]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.computeruse.samples.swiftui
+    info:
+      path: build/SwiftUISample-Info.plist
+      properties:
+        CFBundleDisplayName: SwiftUI Sample
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+
+  WebViewSample:
+    type: application
+    platform: iOS
+    sources: [WebViewSample]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.computeruse.samples.webview
+    info:
+      path: build/WebViewSample-Info.plist
+      properties:
+        CFBundleDisplayName: WebView Sample
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false

@@ -1,0 +1,129 @@
+name: prototype
+
+# Faz 0: Frida agent'ı derler, host köprüsü ve araç testlerini çalıştırır,
+# örnek uygulamaları derleyip Frida Gadget eklenmiş (imzasız) IPA'lar üretir.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "prototype/**"
+      - "samples/**"
+      - "tools/**"
+      - ".github/workflows/prototype.yml"
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: prototype-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FRIDA_VERSION: "17.27.6"
+  # GitHub release varlığının sha256 özeti (frida-gadget-<sürüm>-ios-universal.dylib.gz)
+  FRIDA_GADGET_SHA256: "7241b9112d42b28f74bd1c3afc93952a58e50c0d0371d386e02586e0c375042d"
+
+jobs:
+  agent-and-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Agent'ı derle
+        working-directory: prototype/agent
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Python testleri
+        run: |
+          pip install "websockets>=10.4"
+          python -m unittest discover -v -s prototype/host
+          python -m unittest discover -v -s tools
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frida-agent
+          path: prototype/agent/_agent.js
+          if-no-files-found: error
+
+  samples:
+    runs-on: xcode-27
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Xcode seç
+        run: |
+          XCODE="$(ls -d /Applications/Xcode_*.app | grep -v -i beta | sort -V | tail -1)"
+          sudo xcode-select -s "$XCODE/Contents/Developer"
+          xcodebuild -version
+          echo "iOS SDK: $(xcrun --sdk iphoneos --show-sdk-version)" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: XcodeGen ile projeyi üret
+        working-directory: samples
+        run: |
+          brew install xcodegen
+          xcodegen generate
+
+      - name: Örnek uygulamaları derle (imzasız)
+        working-directory: samples
+        run: |
+          for target in UIKitSample SwiftUISample WebViewSample; do
+            xcodebuild -project BridgeSamples.xcodeproj -target "$target" \
+              -configuration Release -sdk iphoneos \
+              SYMROOT="$PWD/build/sym" \
+              CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+              build | tail -5
+          done
+          ls build/sym/Release-iphoneos
+
+      - name: Frida Gadget'ı indir ve doğrula
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          asset="frida-gadget-${FRIDA_VERSION}-ios-universal.dylib.gz"
+          gh release download "$FRIDA_VERSION" -R frida/frida -p "$asset" -D "$RUNNER_TEMP"
+          echo "${FRIDA_GADGET_SHA256}  $RUNNER_TEMP/$asset" | shasum -a 256 -c -
+          gunzip -c "$RUNNER_TEMP/$asset" > "$RUNNER_TEMP/FridaGadget.dylib"
+          file "$RUNNER_TEMP/FridaGadget.dylib"
+
+      - name: Gadget ekle ve IPA'ları paketle
+        run: |
+          mkdir -p dist
+          for target in UIKitSample SwiftUISample WebViewSample; do
+            for variant in plain gadget; do
+              stage="$RUNNER_TEMP/stage-$target-$variant"
+              rm -rf "$stage" && mkdir -p "$stage/Payload"
+              cp -R "samples/build/sym/Release-iphoneos/$target.app" "$stage/Payload/"
+              app="$stage/Payload/$target.app"
+              if [ "$variant" = gadget ]; then
+                python3 tools/inject_gadget.py "$app" --gadget "$RUNNER_TEMP/FridaGadget.dylib"
+                # Yapı geçerliliğini doğrulamak için ad-hoc imza; kurulumdan önce yeniden imzalanır.
+                codesign --force --sign - "$app/Frameworks/FridaGadget.dylib"
+                codesign --force --sign - "$app"
+                otool -L "$app/$target" | grep FridaGadget
+                name="$target-gadget.ipa"
+              else
+                name="$target.ipa"
+              fi
+              (cd "$stage" && zip -qry "$GITHUB_WORKSPACE/dist/$name" Payload)
+            done
+          done
+          ls -la dist | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sample-ipas
+          path: dist/*.ipa
+          if-no-files-found: error
+          retention-days: 30

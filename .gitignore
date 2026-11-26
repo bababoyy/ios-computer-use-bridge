@@ -4,3 +4,9 @@ build/
 *.mobileprovision
 .DS_Store
 .claude/settings.local.json
+node_modules/
+prototype/agent/_agent.js
+__pycache__/
+samples/build/
+samples/*.xcodeproj/
+dist/

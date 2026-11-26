@@ -17,7 +17,19 @@ concurrency:
 
 jobs:
   dylib:
-    runs-on: macos-latest
+    # xcode-27: iOS 27 SDK'lı önizleme imajı (standart boyut, public repoda ücretsiz).
+    # macos-latest: kararlı yedek (iOS 26 SDK). Önizlemedeki bir sorun derlemeyi kırmasın diye
+    # xcode-27 işi başarısız olsa da iş akışı başarılı sayılır.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: xcode-27
+            experimental: true
+          - runner: macos-latest
+            experimental: false
+    runs-on: ${{ matrix.runner }}
+    continue-on-error: ${{ matrix.experimental }}
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
@@ -42,7 +54,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ComputerUseBridge-dylib
+          name: ComputerUseBridge-dylib-${{ matrix.runner }}
           path: build/ComputerUseBridge.dylib
           if-no-files-found: error
           retention-days: 30

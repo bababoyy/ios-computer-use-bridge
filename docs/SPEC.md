@@ -261,7 +261,7 @@ Geliştirme Linux üzerinde yapılır; macOS'a ve Xcode'a yalnızca GitHub Actio
 
 Kısıtlar:
 
-- **Xcode gecikmesi:** Yeni Xcode, GitHub runner imajlarına genellikle birkaç hafta gecikmeyle gelir. Hedef en güncel iOS olduğu için iş akışı SDK sürümünü loglar; gerekirse Xcode sürümü elle sabitlenir.
+- **Xcode gecikmesi:** Yeni Xcode, `macos-latest` imajına aylar sonra gelir (Kasım 2026'da hâlâ Xcode 26.6 / iOS 26.5 SDK). Bu yüzden iş akışı iki runner'da derler: iOS 27 SDK'lı `xcode-27` önizleme imajı (standart boyut, ücretsiz; önizleme olduğu için kuyruk veya kararsızlık olabilir, başarısızlığı derlemeyi kırmaz) ve kararlı yedek olarak `macos-latest`. Dylib eski API'ler kullandığı için iki çıktı da iOS 27 cihazda çalışır. `xcode-27` GA olup `macos-latest`'e geçince matris tek runner'a indirilebilir. Kaynak: [actions/runner-images](https://github.com/actions/runner-images), [Xcode 27 önizleme duyurusu](https://github.com/actions/runner-images/issues/14404).
 - **Maliyet:** Public repoda macOS runner'ları ücretsizdir. Repo private yapılırsa macOS dakikaları kotayı hızlı tüketir.
 - **İmzalama:** CI dylib'i yalnızca ad-hoc imzalar. Asıl imza, dylib IPA'ya eklendikten sonra yeniden imzalama sırasında atılır.
 - **Hata ayıklama:** Xcode olmadan cihazda kesme noktası ve adım adım ilerleme yoktur. Hata ayıklama loglar, çökme raporları ve Frida ile yapılır.

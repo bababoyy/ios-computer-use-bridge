@@ -120,12 +120,14 @@ python3 odav_demo.py --tap-label Increment --check-id counterLabel
 | Uygulama | `ping` | `observe` (eleman sayısı, `axAutomation`) | Menü → Counter | Increment | Switch/Toggle | `swipe` |
 | --- | --- | --- | --- | --- | --- | --- |
 | UIKitSample | | | | | | |
-| SwiftUISample | ✓ | ✓ 4–5 eleman, `axAutomation: true` | ✓ `hid-touch` | ✓ 0 → 1 → 2 | ✓ anahtarın üstüne koordinatla ya da `activate` ile (eleman merkezine `tap` değiştirmez, bkz. not) | ✓ kenardan geri kaydırma |
+| SwiftUISample | ✓ | ✓ 4–5 eleman, `axAutomation: true` | ✓ `hid-touch` | ✓ 0 → 1 → 2 | ✓ eleman ID'siyle `tap` (0.2.0'dan itibaren), koordinatla ya da `activate` ile | ✓ kenardan geri kaydırma |
 | WebViewSample | | | — | | | |
 
 SwiftUISample sonuçları 26 Kasım 2026'da iOS 27.3 cihazda, LiveContainer'da alındı. Form ekranında Submit, geri butonu, menü hücresi ve sayaç gerçek dokunmayla (`hid-touch`) çalıştı; `swipe 2 450 320 450` sistemin kenardan geri hareketini tetikledi.
 
-**Not, anahtarlar:** SwiftUI `Toggle`'ın erişilebilirlik çerçevesi tüm satırı kaplar (etiket + anahtar). Eleman ID'siyle `tap` satırın ortasına dokunur; gerçek bir parmakta olduğu gibi bu anahtarı değiştirmez. Anahtarı değiştirmek için `activate` kullan ya da anahtarın üstüne koordinatla dokun.
+Aynı testler 0.2.0 ile reverse modda, Tailscale üzerinden (telefon dışarıda, USB yok) tekrarlandı ve hepsi geçti: `ping` ~0,16 sn, ekran görüntülü `observe` ~0,37 sn. Telefon bir kez kopup birkaç saniye içinde kendiliğinden yeniden bağlandı.
+
+**Not, anahtarlar:** SwiftUI `Toggle`'ın erişilebilirlik çerçevesi tüm satırı kaplar (etiket + anahtar) ve anahtar sağ uçtadır. 0.1.0'da eleman ID'siyle `tap` satırın ortasına dokunduğu için anahtar değişmiyordu. 0.2.0'dan itibaren `toggleButton` özelliği taşıyan geniş elemanlarda dokunma noktası anahtarın merkezine kaydırılıyor (`x = sağ kenar − 26`); cihazda off → on → off doğrulandı.
 
 ## Bilinen riskler ve ilk bakılacak yerler
 

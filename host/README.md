@@ -95,8 +95,12 @@ python3 odav_demo.py --tap-label Increment --check-id counterLabel
 | Uygulama | `ping` | `observe` (eleman sayısı, `axAutomation`) | Menü → Counter | Increment | Switch/Toggle | `swipe` |
 | --- | --- | --- | --- | --- | --- | --- |
 | UIKitSample | | | | | | |
-| SwiftUISample | | | | | | |
+| SwiftUISample | ✓ | ✓ 4–5 eleman, `axAutomation: true` | ✓ `hid-touch` | ✓ 0 → 1 → 2 | ✓ anahtarın üstüne koordinatla ya da `activate` ile (eleman merkezine `tap` değiştirmez, bkz. not) | ✓ kenardan geri kaydırma |
 | WebViewSample | | | — | | | |
+
+SwiftUISample sonuçları 26 Kasım 2026'da iOS 27.3 cihazda, LiveContainer'da alındı. Form ekranında Submit, geri butonu, menü hücresi ve sayaç gerçek dokunmayla (`hid-touch`) çalıştı; `swipe 2 450 320 450` sistemin kenardan geri hareketini tetikledi.
+
+**Not, anahtarlar:** SwiftUI `Toggle`'ın erişilebilirlik çerçevesi tüm satırı kaplar (etiket + anahtar). Eleman ID'siyle `tap` satırın ortasına dokunur; gerçek bir parmakta olduğu gibi bu anahtarı değiştirmez. Anahtarı değiştirmek için `activate` kullan ya da anahtarın üstüne koordinatla dokun.
 
 ## Bilinen riskler ve ilk bakılacak yerler
 

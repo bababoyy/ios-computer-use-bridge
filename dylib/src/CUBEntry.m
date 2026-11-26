@@ -5,7 +5,7 @@
 #import "CUBMenu.h"
 #import "CUBObserver.h"
 
-NSString *const CUBBridgeVersion = @"0.2.0";
+NSString *const CUBBridgeVersion = @"0.3.0";
 NSString *const CUBDefaultsReverseEnabled = @"CUB.reverseEnabled";
 NSString *const CUBDefaultsReverseURL = @"CUB.reverseURL";
 NSString *const CUBDefaultsToken = @"CUB.token";

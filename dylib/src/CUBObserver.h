@@ -9,6 +9,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) id object;
 @property (nonatomic) CGRect frame;  // ekran koordinatı, point
 @property (nonatomic) BOOL isWebView;
+/// "Sınıf@ağaçtaki yol"; identifier birden fazla elemanda tekrar ediyorsa ID bundan üretilir.
+@property (nonatomic, copy) NSString *pathKey;
 @end
 
 // Hepsi ana kuyrukta çağrılmalı.

@@ -19,7 +19,13 @@ static NSDictionary *CUBPointDict(CGPoint p) {
 
 NSString *CUBValidateAction(NSDictionary *params) {
     NSString *type = params[@"type"];
-    if (![type isKindOfClass:NSString.class]) return @"type gerekli: tap, swipe ya da activate";
+    if (![type isKindOfClass:NSString.class]) return @"type gerekli: tap, swipe, activate ya da type";
+    if ([type isEqualToString:@"type"]) {
+        id text = params[@"text"];
+        if (![text isKindOfClass:NSString.class] || [text length] > 10000) return @"type için text (en fazla 10000 karakter) gerekli";
+        if (params[@"clear"] && !CUBIsBool(params[@"clear"])) return @"clear bool olmalı";
+        return nil;
+    }
     if (![@[@"tap", @"swipe", @"activate"] containsObject:type]) return nil;  // desteklenmeyen tip: sonuçta bildirilir
     id target = params[@"target"];
     BOOL targetOK = ([target isKindOfClass:NSString.class] && [target length] > 0) || CUBParsePoint(target, NULL);
@@ -166,6 +172,51 @@ static void CUBActivate(CUBFound *_Nullable found, CGPoint p, CUBActCompletion d
 }
 
 // ---------------------------------------------------------------------------
+// Metin girme: odaktaki alana (first responder) yazar.
+
+static __weak UIResponder *gCUBFirstResponder;
+
+@interface UIResponder (CUBFirstResponder)
+- (void)cub_captureFirstResponder:(id)sender;
+@end
+
+@implementation UIResponder (CUBFirstResponder)
+- (void)cub_captureFirstResponder:(id)sender {
+    gCUBFirstResponder = self;
+}
+@end
+
+static UIResponder *_Nullable CUBFirstResponder(void) {
+    gCUBFirstResponder = nil;
+    // Hedefsiz eylem responder zincirinin başına, yani first responder'a gider.
+    [UIApplication.sharedApplication sendAction:@selector(cub_captureFirstResponder:) to:nil from:nil forEvent:nil];
+    return gCUBFirstResponder;
+}
+
+static void CUBTypeText(NSDictionary *params, CUBActCompletion done) {
+    UIResponder *responder = CUBFirstResponder();
+    if (![responder conformsToProtocol:@protocol(UIKeyInput)]) {
+        done(CUBActResult(NO, nil, @"no_focus", @"Odaklanmış metin alanı yok; önce alana dokunun", nil));
+        return;
+    }
+    id<UIKeyInput> input = (id<UIKeyInput>)responder;
+    BOOL clear = [params[@"clear"] boolValue];
+    if (clear && [responder conformsToProtocol:@protocol(UITextInput)]) {
+        id<UITextInput> textInput = (id<UITextInput>)responder;
+        UITextRange *all = [textInput textRangeFromPosition:textInput.beginningOfDocument
+                                                 toPosition:textInput.endOfDocument];
+        if (all && !all.isEmpty) {
+            textInput.selectedTextRange = all;
+            [input deleteBackward];
+        }
+    }
+    NSString *text = params[@"text"];
+    if (text.length) [input insertText:text];
+    done(CUBActResult(YES, @"insert-text", nil, nil,
+                      @{@"responder": NSStringFromClass(responder.class), @"length": @(text.length), @"cleared": @(clear)}));
+}
+
+// ---------------------------------------------------------------------------
 
 void CUBPerformAction(NSDictionary *params, CUBActCompletion completion) {
     if (UIApplication.sharedApplication.applicationState == UIApplicationStateBackground) {
@@ -173,9 +224,13 @@ void CUBPerformAction(NSDictionary *params, CUBActCompletion completion) {
         return;
     }
     NSString *type = params[@"type"];
+    if ([type isEqualToString:@"type"]) {
+        CUBTypeText(params, completion);
+        return;
+    }
     if (![@[@"tap", @"swipe", @"activate"] containsObject:type]) {
         completion(CUBActResult(NO, nil, @"unsupported_action",
-                                [NSString stringWithFormat:@"Desteklenmiyor: %@ (tap, swipe, activate)", type], nil));
+                                [NSString stringWithFormat:@"Desteklenmiyor: %@ (tap, swipe, activate, type)", type], nil));
         return;
     }
 

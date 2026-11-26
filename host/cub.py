@@ -13,6 +13,7 @@ için portu USB üzerinden yönlendir:
     python cub.py tap 200 400             # koordinat (point)
     python cub.py swipe 200 600 200 200 --duration 0.4
     python cub.py activate e1a2b3c4       # semantik (accessibilityActivate vb.)
+    python cub.py type "merhaba" --clear  # odaktaki alana yaz
 """
 from __future__ import annotations
 
@@ -93,6 +94,8 @@ async def run(args: argparse.Namespace) -> int:
         else:
             if args.cmd == "swipe":
                 params = {"type": "swipe", "target": {"x": args.x1, "y": args.y1}, "to": {"x": args.x2, "y": args.y2}}
+            elif args.cmd == "type":
+                params = {"type": "type", "text": args.text, "clear": args.clear}
             else:
                 params = {"type": args.cmd, "target": parse_target(args.target)}
             if getattr(args, "duration", None) is not None:
@@ -127,6 +130,9 @@ def main(argv: list[str] | None = None) -> int:
         s.add_argument(coord, type=float)
     s.add_argument("--duration", type=float)
     s.set_defaults(target=[])
+    t = sub.add_parser("type", help="Odaktaki metin alanına yaz (önce alana dokun)")
+    t.add_argument("text")
+    t.add_argument("--clear", action="store_true", help="Önce alandaki metni sil")
     return asyncio.run(run(p.parse_args(argv)))
 
 

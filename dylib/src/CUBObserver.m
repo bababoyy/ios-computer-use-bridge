@@ -171,8 +171,10 @@ static NSString *_Nullable CUBIdentifierOf(id o) {
     return CUBNonEmpty([(id<UIAccessibilityIdentification>)o accessibilityIdentifier]);
 }
 
-static CUBFound *CUBMakeFound(NSString *elementID, NSDictionary *element, id object, CGRect frame, BOOL isWebView) {
+static CUBFound *CUBMakeFound(NSString *elementID, NSDictionary *element, id object, CGRect frame, BOOL isWebView,
+                              NSString *pathKey) {
     CUBFound *f = [CUBFound new];
+    f.pathKey = pathKey;
     f.elementID = elementID;
     f.element = element;
     f.object = object;
@@ -208,7 +210,7 @@ static CUBFound *CUBDescribe(id o, NSString *path) {
         @"interactive": @(isControl || isTextInput || (traits & interactiveTraits) != 0),
         @"enabled": @(enabled),
     };
-    return CUBMakeFound(elementID, element, o, frame, NO);
+    return CUBMakeFound(elementID, element, o, frame, NO, [NSString stringWithFormat:@"%@@%@", className, path]);
 }
 
 static CUBFound *CUBDescribeWebView(WKWebView *webView, NSString *path) {
@@ -231,7 +233,7 @@ static CUBFound *CUBDescribeWebView(WKWebView *webView, NSString *path) {
         @"interactive": @YES,
         @"enabled": @YES,
     };
-    return CUBMakeFound(elementID, element, webView, frame, YES);
+    return CUBMakeFound(elementID, element, webView, frame, YES, [NSString stringWithFormat:@"WKWebView@%@", path]);
 }
 
 static void CUBVisit(id o, NSString *path, NSUInteger depth, NSMutableArray<CUBFound *> *out, NSUInteger max) {
@@ -283,6 +285,18 @@ NSArray<CUBFound *> *CUBCollectElements(NSUInteger maxElements) {
     NSArray<UIWindow *> *windows = CUBAppWindows();
     for (NSUInteger i = 0; i < windows.count; i++) {
         CUBVisit(windows[i], [NSString stringWithFormat:@"w%lu", (unsigned long)i], 0, out, maxElements);
+    }
+    // Uygulamalar aynı accessibilityIdentifier'ı birçok elemanda kullanabilir (ör. liste kartları).
+    // Tekrar eden ID'leri ağaçtaki yoldan üretilen ID ile ayır.
+    NSCountedSet<NSString *> *counts = [NSCountedSet new];
+    for (CUBFound *f in out) [counts addObject:f.elementID];
+    for (CUBFound *f in out) {
+        if ([counts countForObject:f.elementID] < 2) continue;
+        NSString *unique = CUBHashID(f.pathKey);
+        NSMutableDictionary *element = [f.element mutableCopy];
+        element[@"id"] = unique;
+        f.element = element;
+        f.elementID = unique;
     }
     return out;
 }

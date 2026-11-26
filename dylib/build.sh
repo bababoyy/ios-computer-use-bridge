@@ -7,7 +7,7 @@ cd "$(dirname "$0")/.."
 
 OUT_DIR=build
 OUT="$OUT_DIR/ComputerUseBridge.dylib"
-MIN_IOS="${MIN_IOS:-$(xcrun --sdk iphoneos --show-sdk-version)}"
+MIN_IOS="${MIN_IOS:-26.0}"
 
 mkdir -p "$OUT_DIR"
 
@@ -19,9 +19,13 @@ xcrun --sdk iphoneos clang \
   -dynamiclib \
   -fobjc-arc \
   -O2 \
-  -Wall -Werror \
+  -Wall -Wextra -Wno-unused-parameter -Werror \
   -install_name "@executable_path/Frameworks/ComputerUseBridge.dylib" \
   -framework Foundation \
+  -framework UIKit \
+  -framework CoreGraphics \
+  -framework Network \
+  -weak_framework WebKit \
   -o "$OUT" \
   dylib/src/*.m
 

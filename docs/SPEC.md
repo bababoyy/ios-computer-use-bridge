@@ -154,7 +154,7 @@ Varsayılan durumda sunucu dışarıdan erişilemez; ağ erişimi açıkça etki
 
 ## Yol haritası
 
-Frida prototipiyle başla; her faz bir doğrulama kapısıyla biter.
+Frida prototipiyle başla; her faz bir doğrulama kapısıyla biter. (Faz 0 askıya alındı, aşağıya bakın.)
 
 | Faz | Kapsam | Sonraki faza geçiş kapısı |
 | --- | --- | --- |
@@ -168,7 +168,9 @@ Frida prototipiyle başla; her faz bir doğrulama kapısıyla biter.
 
 Bir faz, altındaki kapı sağlanmadan bir sonrakine geçmez. Faz 0 başarısız olursa native dylib'e yatırım yapılmadan yön değiştirilebilir.
 
-**Faz 0 durumu (26 Kasım 2026):** Kod ve CI hazır; cihaz testi bekleniyor. Agent, host köprüsü, örnek uygulamalar ve Gadget eklenmiş IPA'lar [prototype/](../prototype/README.md), [samples/](../samples/) ve [tools/](../tools/) altında. Faz 0'daki `tap` semantiktir (UIControl eylemi, hücre seçimi, `accessibilityActivate`, WebView'da JavaScript); gerçek dokunma olayı Faz 1'de gelir.
+**Faz 0 sonucu (26 Kasım 2026): askıya alındı.** Gadget eklenmiş örnek uygulamalar iOS 27.3'te `FridaGadget.dylib`'in kendi başlatıcısında `EXC_BREAKPOINT` ile çöktü; Gadget eklenmemiş aynı uygulamalar çalıştı. En olası neden, Frida'nın debugger bağlı olmayan sideload uygulamalarda bulunmayan JIT'e (çalıştırılabilir bellek) ihtiyaç duyması. JIT bağımlılığı istenmediği için Frida yolu bırakıldı ve doğrudan native dylib'e (Faz 1) geçildi. Frida kodu [prototype/](../prototype/README.md) altında arşiv olarak duruyor; örnek uygulamalar ve `tools/` Faz 1'de de kullanılıyor.
+
+**Faz 1 kapsamı (güncel):** Network.framework ile WebSocket JSON-RPC sunucusu (`ping`, `screen`, `observe`, `act`), ekran görüntüsü, erişilebilirlik ağacı, IOHIDEvent ile gerçek `tap` ve `swipe`, semantik `activate`. Yalnızca 127.0.0.1; host'tan `iproxy` ile bağlanılır. Dağıtım iki yoldan: IPA'ya enjeksiyon ya da düz IPA + LiveContainer tweak'i. Kod: [dylib/](../dylib/), istemci: [host/](../host/).
 
 ## Riskler
 
@@ -193,11 +195,17 @@ Bu kararın sonuçları:
 - **Swift:** Swift ABI iOS 12.2'den beri işletim sisteminde, bu yüzden Swift çalışma zamanı dylib'e gömülmez. Swift 6 ve en yeni dil özellikleri sorunsuz kullanılabilir.
 - **Developer Mode:** iOS 16'dan beri, geliştirici sertifikasıyla imzalanmış (sideload edilmiş) uygulamaları çalıştırmak için cihazda *Ayarlar → Gizlilik ve Güvenlik → Geliştirici Modu* açık olmalı.
 
-### Açık: Ana dil Objective-C mi, Swift mi?
+### Karar: Ana dil Objective-C
 
-- [ ] Ana dil Objective-C mi, Swift mi?
+- [x] Ana dil Objective-C mi, Swift mi?
 
-Bileşenlerin dilleri: Hammer Swift; KIF, FLEX, GCDWebServer, Peertalk Objective-C; Telegraph Swift.
+Karar (26 Kasım 2026): **Objective-C**, bir kısıt getirmediği sürece. Getirmiyor: Swift olarak planlanan tek bileşen Hammer'dı. Hammer'ın yaptığı IOHIDEvent sentezi (`IOHIDEventCreateDigitizerEvent` + `-[UIApplication _enqueueHIDEvent:]`) private C/ObjC API'lerle yapıldığı için doğrudan Objective-C ile yazıldı; KIF de aynı yöntemi Objective-C ile kullanır. Ayrıca:
+
+- **Sunucu:** GCDWebServer WebSocket desteklemiyor, Telegraph ise Swift. Bunun yerine Apple'ın Network.framework'ü kullanıldı (C API, ObjC'den doğal, WebSocket yerleşik, üçüncü taraf bağımlılığı yok).
+- **Sınıf adı çakışması:** Tüm sınıf ve fonksiyonlar `CUB` önekiyle adlandırılır.
+- **Derleme:** Theos yerine CI'da doğrudan `xcrun clang` (bkz. Geliştirme ortamı).
+
+Karar öncesi karşılaştırma aşağıda kayıt olarak duruyor. Bileşenlerin dilleri: Hammer Swift; KIF, FLEX, GCDWebServer, Peertalk Objective-C; Telegraph Swift.
 
 | Kriter | Objective-C ağırlıklı | Swift ağırlıklı |
 | --- | --- | --- |
